@@ -13,13 +13,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/sync/errgroup"
-	"golang.org/x/time/rate"
 	"log"
 	mathrand "math/rand/v2"
 	"net/url"
 	"slices"
 	"time"
+
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/time/rate"
 
 	"software.sslmate.com/src/certspotter/ctclient"
 	"software.sslmate.com/src/certspotter/ctcrypto"
@@ -297,7 +299,7 @@ func monitorLogContinously(ctx context.Context, config *Config, ctlog *loglist.L
 			}
 		}
 		if config.Verbose {
-			log.Printf("%s: monitoring brand new log starting from position %d", ctlog.GetMonitoringURL(), state.DownloadPosition.Size())
+			zap.S().Debugf("brand new log %s (starting from %d)", ctlog.GetMonitoringURL(), state.DownloadPosition.Size())
 		}
 		if err := config.State.StoreLogState(ctx, ctlog.LogID, state); err != nil {
 			return fmt.Errorf("error storing log state: %w", err)

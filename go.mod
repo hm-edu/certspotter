@@ -9,6 +9,10 @@ require (
 	golang.org/x/time v0.15.0
 )
 
-require golang.org/x/text v0.37.0 // indirect
+require (
+	go.uber.org/multierr v1.10.0 // indirect
+	go.uber.org/zap v1.27.0
+	golang.org/x/text v0.37.0 // indirect
+)
 
 retract v0.19.0 // Contains serious bugs.
