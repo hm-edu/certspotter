@@ -32,6 +32,7 @@ type FilesystemState struct {
 	ScriptDir string
 	Email     []string
 	Stdout    bool
+	Json      bool
 }
 
 func (s *FilesystemState) logStateDir(logID LogID) string {
@@ -134,6 +135,7 @@ func (s *FilesystemState) NotifyCert(ctx context.Context, cert *DiscoveredCert) 
 		summary: certNotificationSummary(cert),
 		environ: certNotificationEnviron(cert, paths),
 		text:    certNotificationText(cert, paths),
+		json:    cert.Json(),
 	}); err != nil {
 		return fmt.Errorf("error notifying about discovered certificate for %s (%x): %w", cert.WatchItem, cert.SHA256, err)
 	}
@@ -194,6 +196,7 @@ func (s *FilesystemState) NotifyMalformedEntry(ctx context.Context, entry *LogEn
 		environ: environ,
 		summary: summary,
 		text:    text.String(),
+		json:    entry.Json(),
 	}); err != nil {
 		return err
 	}
@@ -223,6 +226,7 @@ func (s *FilesystemState) NotifyHealthCheckFailure(ctx context.Context, ctlog *l
 		environ: environ,
 		summary: info.Summary(),
 		text:    text,
+		json:    info.Json(),
 	}); err != nil {
 		return err
 	}

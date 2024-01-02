@@ -29,11 +29,14 @@ type notification struct {
 	environ []string
 	summary string
 	text    string
+	json    string
 }
 
 func (s *FilesystemState) notify(ctx context.Context, notif *notification) error {
-	if s.Stdout {
+	if s.Stdout && !s.Json {
 		writeToStdout(notif)
+	} else if s.Json {
+		writeJsonToStdout(notif)
 	}
 
 	if len(s.Email) > 0 {
@@ -55,6 +58,11 @@ func (s *FilesystemState) notify(ctx context.Context, notif *notification) error
 	}
 
 	return nil
+}
+func writeJsonToStdout(notif *notification) {
+	stdoutMu.Lock()
+	defer stdoutMu.Unlock()
+	os.Stdout.WriteString(notif.json + "\n")
 }
 
 func writeToStdout(notif *notification) {
