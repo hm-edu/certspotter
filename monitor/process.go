@@ -14,6 +14,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+
 	"software.sslmate.com/src/certspotter"
 	"software.sslmate.com/src/certspotter/ct"
 	"software.sslmate.com/src/certspotter/loglist"
