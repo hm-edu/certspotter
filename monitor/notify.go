@@ -21,6 +21,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 var stdoutMu sync.Mutex
@@ -29,7 +31,7 @@ type notification interface {
 	Environ() []string
 	Summary() string
 	Text() string
-	Json() string
+	Json() []zap.Field
 }
 
 func notify(ctx context.Context, config *Config, notif notification) error {
@@ -62,7 +64,7 @@ func notify(ctx context.Context, config *Config, notif notification) error {
 func writeJsonToStdout(notif notification) {
 	stdoutMu.Lock()
 	defer stdoutMu.Unlock()
-	os.Stdout.WriteString(notif.Json() + "\n")
+	zap.L().Info("New certificate detected", notif.Json()...)
 }
 
 func writeToStdout(notif notification) {

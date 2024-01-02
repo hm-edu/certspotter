@@ -12,13 +12,14 @@ package monitor
 import (
 	"bytes"
 	"encoding/hex"
-	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"net"
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"software.sslmate.com/src/certspotter"
 	"software.sslmate.com/src/certspotter/ct"
 )
@@ -132,7 +133,7 @@ func (cert *discoveredCert) Environ() []string {
 	return env
 }
 
-func (cert *discoveredCert) Json() string {
+func (cert *discoveredCert) Json() []zap.Field {
 	log := struct {
 		Sha256    string
 		DNSNames  []string
@@ -160,11 +161,22 @@ func (cert *discoveredCert) Json() string {
 		log.NotBefore = fmt.Sprintf("[unable to parse: %s]", cert.Info.ValidityParseError)
 		log.NotAfter = fmt.Sprintf("[unable to parse: %s]", cert.Info.ValidityParseError)
 	}
-	json, err := json.Marshal(log)
-	if err != nil {
-		fmt.Printf("error marshaling log entry: %s\n", err)
+	return []zapcore.Field{
+		zap.String("notBefore", log.NotBefore),
+		zap.String("notAfter", log.NotAfter),
+		zap.String("sha256", log.Sha256),
+		zap.Strings("dnsNames", log.DNSNames),
+		zap.Strings("ips", ips(log.IPs)),
+		zap.String("issuer", log.Issuer),
+		zap.String("pubkey", log.Pubkey)}
+}
+
+func ips(data []net.IP) []string {
+	ips := []string{}
+	for _, ip := range data {
+		ips = append(ips, ip.String())
 	}
-	return string(json)
+	return ips
 }
 
 func (cert *discoveredCert) Text() string {

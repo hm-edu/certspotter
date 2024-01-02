@@ -10,9 +10,10 @@
 package monitor
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 type malformedLogEntry struct {
@@ -56,8 +57,8 @@ func (malformed *malformedLogEntry) Environ() []string {
 	}
 }
 
-func (cert *malformedLogEntry) Json() string {
-	json, err := json.Marshal(struct {
+func (cert *malformedLogEntry) Json() []zap.Field {
+	data := struct {
 		LogEntry string
 		LeafHash string
 		Error    string
@@ -65,11 +66,8 @@ func (cert *malformedLogEntry) Json() string {
 		LogEntry: fmt.Sprintf("%d @ %s", cert.Entry.Index, cert.Entry.Log.URL),
 		LeafHash: cert.Entry.LeafHash.Base64String(),
 		Error:    cert.Error,
-	})
-	if err != nil {
-		fmt.Printf("error marshaling malformed log entry: %s\n", err)
 	}
-	return string(json)
+	return []zap.Field{zap.String("LogEntry", data.LogEntry), zap.String("LeafHash", data.LeafHash), zap.String("Error", data.Error)}
 }
 
 func (malformed *malformedLogEntry) Text() string {
