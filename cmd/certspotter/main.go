@@ -213,6 +213,7 @@ func main() {
 		startAtEnd    bool
 		stateDir      string
 		stdout        bool
+		jsonLog       bool
 		verbose       bool
 		version       bool
 		watchlist     string
@@ -225,6 +226,7 @@ func main() {
 	flag.StringVar(&flags.script, "script", "", "Program to execute when a matching certificate is discovered")
 	flag.BoolVar(&flags.startAtEnd, "start_at_end", false, "Start monitoring new logs from the end rather than the beginning (saves considerable bandwidth)")
 	flag.StringVar(&flags.stateDir, "state_dir", defaultStateDir(), "Directory for storing log position and discovered certificates")
+	flag.BoolVar(&flags.jsonLog, "jsonLog", false, "Write matching certificates to stdout in JSON format")
 	flag.BoolVar(&flags.stdout, "stdout", false, "Write matching certificates to stdout")
 	flag.BoolVar(&flags.verbose, "verbose", false, "Print detailed information about certspotter's operation to stderr")
 	flag.BoolVar(&flags.version, "version", false, "Print version and exit")
@@ -255,6 +257,8 @@ func main() {
 		ScriptDir: defaultScriptDir(),
 		Email:     flags.email,
 		Stdout:    flags.stdout,
+		Quiet:     !flags.verbose,
+		Json:      flags.jsonLog,
 	}
 	var logListPubkey []byte
 	if flags.logListPubkey != "" {
@@ -316,7 +320,7 @@ func main() {
 	defer stop()
 
 	go func() {
-		ticker := time.NewTicker(24*time.Hour)
+		ticker := time.NewTicker(24 * time.Hour)
 		defer ticker.Stop()
 		for {
 			fsstate.PruneOldErrors()

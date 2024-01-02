@@ -93,6 +93,7 @@ func healthCheckLog(ctx context.Context, config *Config, ctlog *loglist.Log) err
 type HealthCheckFailure interface {
 	Summary() string
 	Text() string
+	Json() string
 }
 
 type StaleSTHInfo struct {
@@ -137,6 +138,19 @@ func (e *BacklogInfo) Summary() string {
 }
 func (e *StaleLogListInfo) Summary() string {
 	return fmt.Sprintf("Unable to retrieve log list since %s", e.LastSuccess)
+}
+
+func (cert *StaleLogListInfo) Json() string {
+	return ""
+}
+func (cert *BacklogInfo) Json() string {
+	return ""
+}
+func (cert *StaleSTHInfo) Json() string {
+	return ""
+}
+func (entry *LogEntry) Json() string {
+	return ""
 }
 
 func (e *StaleSTHInfo) Text() string {
