@@ -25,6 +25,8 @@ import (
 	"syscall"
 	"time"
 
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"software.sslmate.com/src/certspotter/loglist"
 	"software.sslmate.com/src/certspotter/monitor"
 )
@@ -158,6 +160,15 @@ func appendFunc(slice *[]string) func(string) error {
 }
 
 func main() {
+	encoderCfg := zap.NewProductionEncoderConfig()
+	atom := zap.NewAtomicLevel()
+	logger := zap.New(zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderCfg),
+		zapcore.Lock(os.Stdout),
+		atom,
+	))
+	defer logger.Sync()
+
 	loglist.UserAgent = fmt.Sprintf("certspotter/%s (%s; %s; %s)", certspotterVersion(), runtime.Version(), runtime.GOOS, runtime.GOARCH)
 
 	var flags struct {
@@ -187,13 +198,12 @@ func main() {
 	flag.BoolVar(&flags.version, "version", false, "Print version and exit")
 	flag.StringVar(&flags.watchlist, "watchlist", defaultWatchListPathIfExists(), "File containing domain names to watch")
 	flag.Parse()
-
 	if flags.version {
-		fmt.Fprintf(os.Stdout, "certspotter version %s\n", certspotterVersion())
+		logger.Sugar().Infof("certspotter version %s", certspotterVersion())
 		os.Exit(0)
 	}
 	if flags.watchlist == "" {
-		fmt.Fprintf(os.Stderr, "%s: watch list not found: please create %s or specify alternative path using -watchlist\n", programName, defaultWatchListPath())
+		logger.Sugar().Warnf("%s: watch list not found: please create %s or specify alternative path using -watchlist", programName, defaultWatchListPath())
 		os.Exit(2)
 	}
 
@@ -208,6 +218,11 @@ func main() {
 		Quiet:     !flags.verbose,
 		Json:      flags.jsonLog,
 	}
+	if flags.verbose {
+		atom.SetLevel(zap.DebugLevel)
+	}
+	zap.ReplaceGlobals(logger)
+
 	config := &monitor.Config{
 		LogListSource:       flags.logs,
 		State:               fsstate,
@@ -221,32 +236,32 @@ func main() {
 		emailFileExists = true
 		fsstate.Email = append(fsstate.Email, emailRecipients...)
 	} else if !errors.Is(err, fs.ErrNotExist) {
-		fmt.Fprintf(os.Stderr, "%s: error reading email recipients file %q: %s\n", programName, defaultEmailFile(), err)
+		logger.Sugar().Warnf("%s: error reading email recipients file %q: %s", programName, defaultEmailFile(), err)
 		os.Exit(1)
 	}
 
 	if len(fsstate.Email) == 0 && !emailFileExists && fsstate.Script == "" && !fileExists(fsstate.ScriptDir) && fsstate.Stdout == false {
-		fmt.Fprintf(os.Stderr, "%s: no notification methods were specified\n", programName)
-		fmt.Fprintf(os.Stderr, "Please specify at least one of the following notification methods:\n")
-		fmt.Fprintf(os.Stderr, " - Place one or more email addresses in %s (one address per line)\n", defaultEmailFile())
-		fmt.Fprintf(os.Stderr, " - Place one or more executable scripts in the %s directory\n", fsstate.ScriptDir)
-		fmt.Fprintf(os.Stderr, " - Specify an email address using the -email flag\n")
-		fmt.Fprintf(os.Stderr, " - Specify the path to an executable script using the -script flag\n")
-		fmt.Fprintf(os.Stderr, " - Specify the -stdout flag\n")
+		logger.Sugar().Warnf("%s: no notification methods were specified", programName)
+		logger.Sugar().Warnf("Please specify at least one of the following notification methods:")
+		logger.Sugar().Warnf(" - Place one or more email addresses in %s (one address per line)", defaultEmailFile())
+		logger.Sugar().Warnf(" - Place one or more executable scripts in the %s directory", fsstate.ScriptDir)
+		logger.Sugar().Warnf(" - Specify an email address using the -email flag")
+		logger.Sugar().Warnf(" - Specify the path to an executable script using the -script flag")
+		logger.Sugar().Warnf(" - Specify the -stdout flag")
 		os.Exit(2)
 	}
 
 	if flags.watchlist == "-" {
 		watchlist, err := monitor.ReadWatchList(os.Stdin)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s: error reading watchlist from standard in: %s\n", programName, err)
+			logger.Sugar().Warnf("%s: error reading watchlist from standard in: %s", programName, err)
 			os.Exit(1)
 		}
 		config.WatchList = watchlist
 	} else {
 		watchlist, err := readWatchListFile(flags.watchlist)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s: error reading watchlist from %q: %s\n", programName, flags.watchlist, err)
+			logger.Sugar().Warnf("%s: error reading watchlist from %q: %s", programName, flags.watchlist, err)
 			os.Exit(1)
 		}
 		config.WatchList = watchlist
