@@ -11,10 +11,11 @@ package monitor
 
 import (
 	"context"
+	"time"
+
 	"software.sslmate.com/src/certspotter/ct"
 	"software.sslmate.com/src/certspotter/loglist"
 	"software.sslmate.com/src/certspotter/merkletree"
-	"time"
 )
 
 type LogState struct {

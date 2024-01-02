@@ -14,10 +14,10 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
 	"software.sslmate.com/src/certspotter/ct"
 	"software.sslmate.com/src/certspotter/ct/client"
 	"software.sslmate.com/src/certspotter/loglist"
@@ -115,7 +115,7 @@ func monitorLog(ctx context.Context, config *Config, ctlog *loglist.Log, logClie
 			}
 		}
 		if config.Verbose {
-			log.Printf("brand new log %s (starting from %d)", ctlog.URL, state.DownloadPosition.Size())
+			zap.S().Debugf("brand new log %s (starting from %d)", ctlog.URL, state.DownloadPosition.Size())
 		}
 		if err := config.State.StoreLogState(ctx, ctlog.LogID, state); err != nil {
 			return fmt.Errorf("error storing log state: %w", err)
@@ -137,7 +137,7 @@ func monitorLog(ctx context.Context, config *Config, ctlog *loglist.Log, logClie
 
 	defer func() {
 		if config.Verbose {
-			log.Printf("saving state in defer for %s", ctlog.URL)
+			zap.S().Debugf("saving state in defer for %s", ctlog.URL)
 		}
 		if err := config.State.StoreLogState(ctx, ctlog.LogID, state); err != nil && returnedErr == nil {
 			returnedErr = fmt.Errorf("error storing log state: %w", err)
@@ -156,7 +156,7 @@ func monitorLog(ctx context.Context, config *Config, ctlog *loglist.Log, logClie
 		downloadErr   error
 	)
 	if config.Verbose {
-		log.Printf("downloading entries from %s in range [%d, %d)", ctlog.URL, downloadBegin, downloadEnd)
+		zap.S().Debugf("downloading entries from %s in range [%d, %d)", ctlog.URL, downloadBegin, downloadEnd)
 	}
 	go func() {
 		defer close(entries)
@@ -214,7 +214,7 @@ func monitorLog(ctx context.Context, config *Config, ctlog *loglist.Log, logClie
 	}
 
 	if config.Verbose {
-		log.Printf("finished downloading entries from %s", ctlog.URL)
+		zap.S().Debugf("finished downloading entries from %s", ctlog.URL)
 	}
 
 	state.LastSuccess = startTime.UTC()

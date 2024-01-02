@@ -13,11 +13,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/sync/errgroup"
-	"log"
 	insecurerand "math/rand"
-	"software.sslmate.com/src/certspotter/loglist"
 	"time"
+
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
+	"software.sslmate.com/src/certspotter/loglist"
 )
 
 const (
@@ -75,7 +76,7 @@ func (daemon *daemon) startTask(ctx context.Context, ctlog *loglist.Log) task {
 		defer cancel()
 		err := monitorLogContinously(ctx, daemon.config, ctlog)
 		if daemon.config.Verbose {
-			log.Printf("task for log %s stopped with error %s", ctlog.URL, err)
+			zap.S().Errorf("task for log %s stopped with error %s", ctlog.URL, err)
 		}
 		if ctx.Err() == context.Canceled && errors.Is(err, context.Canceled) {
 			return nil
@@ -95,7 +96,7 @@ func (daemon *daemon) loadLogList(ctx context.Context) error {
 	}
 
 	if daemon.config.Verbose {
-		log.Printf("fetched %d logs from %q", len(newLogList), daemon.config.LogListSource)
+		zap.S().Debugf("fetched %d logs from %q", len(newLogList), daemon.config.LogListSource)
 	}
 
 	for logID, task := range daemon.tasks {
@@ -103,7 +104,7 @@ func (daemon *daemon) loadLogList(ctx context.Context) error {
 			continue
 		}
 		if daemon.config.Verbose {
-			log.Printf("stopping task for log %s", logID.Base64String())
+			zap.S().Debugf("stopping task for log %s", logID.Base64String())
 		}
 		task.stop()
 		delete(daemon.tasks, logID)
@@ -113,7 +114,7 @@ func (daemon *daemon) loadLogList(ctx context.Context) error {
 			continue
 		}
 		if daemon.config.Verbose {
-			log.Printf("starting task for log %s (%s)", logID.Base64String(), ctlog.URL)
+			zap.S().Debugf("starting task for log %s (%s)", logID.Base64String(), ctlog.URL)
 		}
 		daemon.tasks[logID] = daemon.startTask(ctx, ctlog)
 	}
