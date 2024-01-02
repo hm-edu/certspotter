@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
 	"software.sslmate.com/src/certspotter/ct"
 	"software.sslmate.com/src/certspotter/loglist"
 )
@@ -136,14 +137,14 @@ func (e *staleLogListEvent) Summary() string {
 	return fmt.Sprintf("Unable to retrieve log list since %s", e.LastSuccess)
 }
 
-func (cert *staleLogListEvent) Json() string {
-	return ""
+func (cert *staleLogListEvent) Json() []zap.Field {
+	return []zap.Field{}
 }
-func (cert *backlogEvent) Json() string {
-	return ""
+func (cert *backlogEvent) Json() []zap.Field {
+	return []zap.Field{}
 }
-func (cert *staleSTHEvent) Json() string {
-	return ""
+func (cert *staleSTHEvent) Json() []zap.Field {
+	return []zap.Field{}
 }
 
 func (e *staleSTHEvent) Text() string {

@@ -9,10 +9,8 @@
 
 package monitor
 
-import (
-	"log"
-)
+import "go.uber.org/zap"
 
 func recordError(err error) {
-	log.Print(err)
+	zap.Error(err)
 }
