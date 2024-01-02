@@ -19,5 +19,6 @@ type Config struct {
 	StartAtEnd          bool
 	WatchList           WatchList
 	Verbose             bool
+	JsonLog             bool
 	HealthCheckInterval time.Duration
 }
