@@ -31,7 +31,7 @@ jobs:
           go-version: ^1.21
 
       - name: Build binaries
-        run: go build ./cmd/certspotter/ -o certspotter -ldflags "-s -w" -v .
+        run: go build  -o certspotter -ldflags "-s -w" -v ./cmd/certspotter/
         env:
           CGO_ENABLED: 0
 
