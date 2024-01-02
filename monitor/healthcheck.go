@@ -136,6 +136,16 @@ func (e *staleLogListEvent) Summary() string {
 	return fmt.Sprintf("Unable to retrieve log list since %s", e.LastSuccess)
 }
 
+func (cert *staleLogListEvent) Json() string {
+	return ""
+}
+func (cert *backlogEvent) Json() string {
+	return ""
+}
+func (cert *staleSTHEvent) Json() string {
+	return ""
+}
+
 func (e *staleSTHEvent) Text() string {
 	text := new(strings.Builder)
 	fmt.Fprintf(text, "certspotter has been unable to contact %s since %s. Consequentially, certspotter may fail to notify you about certificates in this log.\n", e.Log.URL, e.LastSuccess)

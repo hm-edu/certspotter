@@ -12,8 +12,10 @@ package monitor
 import (
 	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -128,6 +130,41 @@ func (cert *discoveredCert) Environ() []string {
 	}
 
 	return env
+}
+
+func (cert *discoveredCert) Json() string {
+	log := struct {
+		Sha256    string
+		DNSNames  []string
+		IPs       []net.IP
+		Issuer    string
+		Pubkey    string
+		NotBefore string
+		NotAfter  string
+	}{
+		Sha256:   hex.EncodeToString(cert.SHA256[:]),
+		DNSNames: cert.Identifiers.DNSNames,
+		IPs:      cert.Identifiers.IPAddrs,
+		Issuer:   cert.Info.Issuer.String(),
+		Pubkey:   hex.EncodeToString(cert.PubkeySHA256[:]),
+	}
+	if cert.Info.IssuerParseError == nil {
+		log.Issuer = cert.Info.Issuer.String()
+	} else {
+		log.Issuer = fmt.Sprintf("[unable to parse: %s]", cert.Info.IssuerParseError)
+	}
+	if cert.Info.ValidityParseError == nil {
+		log.NotBefore = cert.Info.Validity.NotBefore.String()
+		log.NotAfter = cert.Info.Validity.NotAfter.String()
+	} else {
+		log.NotBefore = fmt.Sprintf("[unable to parse: %s]", cert.Info.ValidityParseError)
+		log.NotAfter = fmt.Sprintf("[unable to parse: %s]", cert.Info.ValidityParseError)
+	}
+	json, err := json.Marshal(log)
+	if err != nil {
+		fmt.Printf("error marshaling log entry: %s\n", err)
+	}
+	return string(json)
 }
 
 func (cert *discoveredCert) Text() string {

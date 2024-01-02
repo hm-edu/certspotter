@@ -10,6 +10,7 @@
 package monitor
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -53,6 +54,22 @@ func (malformed *malformedLogEntry) Environ() []string {
 		"TEXT_FILENAME=" + malformed.TextPath,
 		"CERT_PARSEABLE=no", // backwards compat with pre-0.15.0; not documented
 	}
+}
+
+func (cert *malformedLogEntry) Json() string {
+	json, err := json.Marshal(struct {
+		LogEntry string
+		LeafHash string
+		Error    string
+	}{
+		LogEntry: fmt.Sprintf("%d @ %s", cert.Entry.Index, cert.Entry.Log.URL),
+		LeafHash: cert.Entry.LeafHash.Base64String(),
+		Error:    cert.Error,
+	})
+	if err != nil {
+		fmt.Printf("error marshaling malformed log entry: %s\n", err)
+	}
+	return string(json)
 }
 
 func (malformed *malformedLogEntry) Text() string {

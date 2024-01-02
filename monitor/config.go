@@ -24,5 +24,6 @@ type Config struct {
 	ScriptDir           string
 	Email               []string
 	Stdout              bool
+	JsonLog             bool
 	HealthCheckInterval time.Duration
 }
