@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
 	"software.sslmate.com/src/certspotter/ct"
 	"software.sslmate.com/src/certspotter/loglist"
 )
@@ -66,7 +67,7 @@ func healthCheckLog(ctx context.Context, config *Config, ctlog *loglist.Log) err
 type HealthCheckFailure interface {
 	Summary() string
 	Text() string
-	Json() string
+	Json() []zap.Field
 }
 
 type StaleSTHInfo struct {
@@ -102,19 +103,18 @@ func (e *StaleLogListInfo) Summary() string {
 	return fmt.Sprintf("Unable to retrieve log list since %s", e.LastSuccess)
 }
 
-func (cert *StaleLogListInfo) Json() string {
-	return ""
+func (cert *StaleLogListInfo) Json() []zap.Field {
+	return []zap.Field{}
 }
-func (cert *BacklogInfo) Json() string {
-	return ""
+func (cert *BacklogInfo) Json() []zap.Field {
+	return []zap.Field{}
 }
-func (cert *StaleSTHInfo) Json() string {
-	return ""
+func (cert *StaleSTHInfo) Json() []zap.Field {
+	return []zap.Field{}
 }
-func (entry *LogEntry) Json() string {
-	return ""
+func (entry *LogEntry) Json() []zap.Field {
+	return []zap.Field{}
 }
-
 func (e *StaleSTHInfo) Text() string {
 	text := new(strings.Builder)
 	fmt.Fprintf(text, "certspotter has been unable to contact %s since %s. Consequentially, certspotter may fail to notify you about certificates in this log.\n", e.Log.URL, e.LastSuccess)

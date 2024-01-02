@@ -13,12 +13,13 @@ import (
 	"context"
 	"log"
 
+	"go.uber.org/zap"
 	"software.sslmate.com/src/certspotter/loglist"
 )
 
 func recordError(ctx context.Context, config *Config, ctlog *loglist.Log, errToRecord error) {
 	if err := config.State.NotifyError(ctx, ctlog, errToRecord); err != nil {
-		log.Printf("unable to notify about error: ", err)
+		zap.L().Warn("unable to notify about error: ", zap.Error(err))
 		if ctlog == nil {
 			log.Print(errToRecord)
 		} else {
