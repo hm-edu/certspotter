@@ -29,11 +29,14 @@ type notification interface {
 	Environ() []string
 	Summary() string
 	Text() string
+	Json() string
 }
 
 func notify(ctx context.Context, config *Config, notif notification) error {
-	if config.Stdout {
+	if config.Stdout && !config.JsonLog {
 		writeToStdout(notif)
+	} else if config.JsonLog {
+		writeJsonToStdout(notif)
 	}
 
 	if len(config.Email) > 0 {
@@ -55,6 +58,11 @@ func notify(ctx context.Context, config *Config, notif notification) error {
 	}
 
 	return nil
+}
+func writeJsonToStdout(notif notification) {
+	stdoutMu.Lock()
+	defer stdoutMu.Unlock()
+	os.Stdout.WriteString(notif.Json() + "\n")
 }
 
 func writeToStdout(notif notification) {

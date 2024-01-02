@@ -163,6 +163,7 @@ func main() {
 		startAtEnd  bool
 		stateDir    string
 		stdout      bool
+		jsonLog     bool
 		verbose     bool
 		version     bool
 		watchlist   string
@@ -175,6 +176,7 @@ func main() {
 	flag.StringVar(&flags.script, "script", "", "Program to execute when a matching certificate is discovered")
 	flag.BoolVar(&flags.startAtEnd, "start_at_end", false, "Start monitoring logs from the end rather than the beginning (saves considerable bandwidth)")
 	flag.StringVar(&flags.stateDir, "state_dir", defaultStateDir(), "Directory for storing log position and discovered certificates")
+	flag.BoolVar(&flags.jsonLog, "jsonLog", false, "Write matching certificates to stdout in JSON format")
 	flag.BoolVar(&flags.stdout, "stdout", false, "Write matching certificates to stdout")
 	flag.BoolVar(&flags.verbose, "verbose", false, "Be verbose")
 	flag.BoolVar(&flags.version, "version", false, "Print version and exit")
@@ -200,6 +202,7 @@ func main() {
 		ScriptDir:           defaultScriptDir(),
 		Email:               flags.email,
 		Stdout:              flags.stdout,
+		JsonLog:             flags.jsonLog,
 		HealthCheckInterval: flags.healthcheck,
 	}
 
@@ -212,7 +215,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(config.Email) == 0 && !emailFileExists && config.Script == "" && !fileExists(config.ScriptDir) && config.Stdout == false {
+	if len(config.Email) == 0 && !emailFileExists && config.Script == "" && !fileExists(config.ScriptDir) && !config.Stdout {
 		fmt.Fprintf(os.Stderr, "%s: no notification methods were specified\n", programName)
 		fmt.Fprintf(os.Stderr, "Please specify at least one of the following notification methods:\n")
 		fmt.Fprintf(os.Stderr, " - Place one or more email addresses in %s (one address per line)\n", defaultEmailFile())
