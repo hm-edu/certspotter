@@ -25,6 +25,7 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap/zapcore"
 	"software.sslmate.com/src/certspotter/cttypes"
 	"software.sslmate.com/src/certspotter/loglist"
 	"software.sslmate.com/src/certspotter/merkletree"
@@ -241,6 +242,8 @@ func (s *FilesystemState) NotifyCert(ctx context.Context, cert *DiscoveredCert) 
 		environ: certNotificationEnviron(cert, paths),
 		text:    certNotificationText(cert, paths),
 		json:    cert.Json(),
+		level:   zapcore.InfoLevel,
+		msg:     "New certificate detected",
 	}); err != nil {
 		return fmt.Errorf("error notifying about discovered certificate for %s (%x): %w", cert.WatchItem, cert.SHA256, err)
 	}
@@ -295,6 +298,8 @@ func (s *FilesystemState) NotifyMalformedEntry(ctx context.Context, entry *LogEn
 		summary: summary,
 		text:    text.String(),
 		json:    entry.Json(),
+		level:   zapcore.WarnLevel,
+		msg:     "Malformed log entry",
 	}); err != nil {
 		return err
 	}
@@ -332,6 +337,8 @@ func (s *FilesystemState) NotifyHealthCheckFailure(ctx context.Context, ctlog *l
 		summary: info.Summary(),
 		text:    text,
 		json:    info.Json(),
+		level:   zapcore.WarnLevel,
+		msg:     "Health check failure",
 	}); err != nil {
 		return err
 	}
