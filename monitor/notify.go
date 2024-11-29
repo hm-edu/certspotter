@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var stdoutMu sync.Mutex
@@ -32,6 +33,8 @@ type notification struct {
 	summary string
 	text    string
 	json    []zap.Field
+	level   zapcore.Level
+	msg     string
 }
 
 func (s *FilesystemState) notify(ctx context.Context, notif *notification) error {
@@ -64,7 +67,13 @@ func (s *FilesystemState) notify(ctx context.Context, notif *notification) error
 func writeJsonToStdout(notif *notification) {
 	stdoutMu.Lock()
 	defer stdoutMu.Unlock()
-	zap.L().Info("New certificate detected", notif.json...)
+	switch notif.level {
+	case zapcore.WarnLevel:
+		zap.L().Warn(notif.msg, notif.json...)
+	default:
+		zap.L().Info(notif.msg, notif.json...)
+	}
+
 }
 
 func writeToStdout(notif *notification) {
