@@ -104,16 +104,16 @@ func (e *StaleLogListInfo) Summary() string {
 }
 
 func (cert *StaleLogListInfo) Json() []zap.Field {
-	return []zap.Field{}
+	return []zap.Field{zap.String("details", fmt.Sprintf("unable to retrieve the log list from %s since %s", cert.Source, cert.LastSuccess))}
 }
 func (cert *BacklogInfo) Json() []zap.Field {
-	return []zap.Field{}
+	return []zap.Field{zap.String("details", fmt.Sprintf("unable to download entries from %s in a timely manner", cert.Log.URL))}
 }
 func (cert *StaleSTHInfo) Json() []zap.Field {
-	return []zap.Field{}
+	return []zap.Field{zap.String("details", fmt.Sprintf("unable to contact %s since %s", cert.Log.URL, cert.LastSuccess))}
 }
 func (entry *LogEntry) Json() []zap.Field {
-	return []zap.Field{}
+	return []zap.Field{zap.String("log", entry.Log.URL), zap.Uint64("index", entry.Index), zap.String("leaf_hash", entry.LeafHash.Base64String())}
 }
 func (e *StaleSTHInfo) Text() string {
 	text := new(strings.Builder)
