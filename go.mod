@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	golang.org/x/net v0.39.0
-	golang.org/x/sync v0.13.0
+	golang.org/x/sync v0.14.0
 )
 
 require go.uber.org/multierr v1.10.0 // indirect
