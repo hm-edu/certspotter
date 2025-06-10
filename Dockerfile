@@ -8,5 +8,5 @@ COPY . ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o certspotter ./cmd/certspotter/
 
-FROM alpine:3.19.0@sha256:51b67269f354137895d43f3b3d810bfacd3945438e94dc5ac55fdac340352f48
+FROM alpine:3.22.0@sha256:8a1f59ffb675680d47db6337b49d22281a139e9d709335b492be023728e11715
 COPY --from=0 /app/certspotter /usr/local/bin/certspotter
