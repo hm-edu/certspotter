@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	go.uber.org/zap v1.28.0
-	golang.org/x/crypto v0.51.0
+	golang.org/x/crypto v0.52.0
 	golang.org/x/net v0.54.0
 	golang.org/x/sync v0.20.0
 )
